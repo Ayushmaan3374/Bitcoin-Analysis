@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bitcoin Cluster Predictor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background-color: #f2f2f2;
+    }
+    .container {
+      max-width: 400px;
+      margin: auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, button {
+      width: 100%;
+      padding: 0.7rem;
+      margin: 0.5rem 0;
+      font-size: 1rem;
+    }
+    #result {
+      margin-top: 1rem;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Bitcoin Cluster Prediction</h2>
+    <form id="predictForm">
+      <label for="f1">Feature 1:</label>
+      <input type="number" id="f1" required>
+      <label for="f2">Feature 2:</label>
+      <input type="number" id="f2" required>
+      <button type="submit">Predict Cluster</button>
+    </form>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('predictForm');
+    const resultDiv = document.getElementById('result');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f1 = parseFloat(document.getElementById('f1').value);
+      const f2 = parseFloat(document.getElementById('f2').value);
+
+      const response = await fetch('/predict', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ features: [[f1, f2]] })
+      });
+
+      const data = await response.json();
+      if (data.cluster) {
+        resultDiv.innerText = `🧠 Predicted Cluster: ${data.cluster[0]}`;
+      } else if (data.error) {
+        resultDiv.innerText = `❌ Error: ${data.error}`;
+      }
+    });
+  </script>
+</body>
+</html>
