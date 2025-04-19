@@ -33,10 +33,10 @@
   <div class="container">
     <h2>Bitcoin Cluster Prediction</h2>
     <form id="predictForm">
-      <label for="f1">Feature 1:</label>
-      <input type="number" id="f1" required>
-      <label for="f2">Feature 2:</label>
-      <input type="number" id="f2" required>
+      <label for="volume">Volume:</label>
+      <input type="number" id="volume" required>
+      <label for="volatility">Volatility:</label>
+      <input type="number" id="volatility" required>
       <button type="submit">Predict Cluster</button>
     </form>
     <div id="result"></div>
@@ -48,13 +48,13 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const f1 = parseFloat(document.getElementById('f1').value);
-      const f2 = parseFloat(document.getElementById('f2').value);
+      const volume = parseFloat(document.getElementById('volume').value);
+      const volatility = parseFloat(document.getElementById('volatility').value);
 
       const response = await fetch('/predict', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ features: [[f1, f2]] })
+        body: JSON.stringify({ features: [[volume, volatility]] })
       });
 
       const data = await response.json();
