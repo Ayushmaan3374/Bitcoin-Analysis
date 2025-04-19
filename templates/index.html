@@ -1,69 +1,166 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <title>Bitcoin Cluster Predictor</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 2rem;
-      background-color: #f2f2f2;
-    }
-    .container {
-      max-width: 400px;
-      margin: auto;
-      background: white;
-      padding: 2rem;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    input, button {
-      width: 100%;
-      padding: 0.7rem;
-      margin: 0.5rem 0;
-      font-size: 1rem;
-    }
-    #result {
-      margin-top: 1rem;
-      font-weight: bold;
-      color: #333;
-    }
-  </style>
+    <title>Bitcoin Cluster Predictor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+            background-color: #f2f2f2;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 400px;
+            width: 90%;
+            margin: auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #444;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.3rem;
+            color: #555;
+        }
+
+        input,
+        button {
+            width: 100%;
+            padding: 0.7rem;
+            margin: 0.5rem 0;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #result {
+            margin-top: 1rem;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .loading {
+            opacity: 0.7;
+        }
+    </style>
 </head>
+
 <body>
-  <div class="container">
-    <h2>Bitcoin Cluster Prediction</h2>
-    <form id="predictForm">
-      <label for="volume">Volume:</label>
-      <input type="number" id="volume" required>
-      <label for="volatility">Volatility:</label>
-      <input type="number" id="volatility" required>
-      <button type="submit">Predict Cluster</button>
-    </form>
-    <div id="result"></div>
-  </div>
+    <div class="container">
+        <h2>Bitcoin Cluster Prediction</h2>
+        <form id="predictForm">
+            <label for="volume">Volume:</label>
+            <input type="number" id="volume" required>
+            <label for="volatility">Volatility:</label>
+            <input type="number" id="volatility" required>
+            <button type="submit">Predict Cluster</button>
+        </form>
+        <div id="result"></div>
+    </div>
 
-  <script>
-    const form = document.getElementById('predictForm');
-    const resultDiv = document.getElementById('result');
+    <script>
+        const form = document.getElementById('predictForm');
+        const resultDiv = document.getElementById('result');
+        const volumeInput = document.getElementById('volume');
+        const volatilityInput = document.getElementById('volatility');
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const volume = parseFloat(document.getElementById('volume').value);
-      const volatility = parseFloat(document.getElementById('volatility').value);
+        function validateInput() {
+            let isValid = true;
+            if (volumeInput.value === '' || isNaN(volumeInput.value)) {
+                volumeInput.classList.add('error');
+                isValid = false;
+            } else {
+                volumeInput.classList.remove('error');
+            }
+            if (volatilityInput.value === '' || isNaN(volatilityInput.value)) {
+                volatilityInput.classList.add('error');
+                isValid = false;
+            } else {
+                volatilityInput.classList.remove('error');
+            }
+            return isValid;
+        }
 
-      const response = await fetch('/predict', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ features: [[volume, volatility]] })
-      });
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-      const data = await response.json();
-      if (data.cluster) {
-        resultDiv.innerText = `🧠 Predicted Cluster: ${data.cluster[0]}`;
-      } else if (data.error) {
-        resultDiv.innerText = `❌ Error: ${data.error}`;
-      }
-    });
-  </script>
+            if (!validateInput()) {
+                resultDiv.innerText = "❌ Please enter valid numbers for Volume and Volatility.";
+                return;
+            }
+
+            const volume = parseFloat(volumeInput.value);
+            const volatility = parseFloat(volatilityInput.value);
+
+            resultDiv.innerText = "⏳ Predicting...";
+            resultDiv.classList.add('loading');
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        features: [[volume, volatility]]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                resultDiv.classList.remove('loading');
+
+                if (data.cluster !== undefined) {
+                    let riskLevel = "";
+                    if (data.cluster[0] === 0) {
+                        riskLevel = "Low Risk";  //Show Low Risk for Cluster 0
+                    } else {
+                        riskLevel = "High Risk"; //Show High Risk for Cluster 1
+                    }
+                    resultDiv.innerText = `🧠 Predicted Cluster: ${data.cluster[0]} (${riskLevel})`;
+                } else if (data.error) {
+                    resultDiv.innerText = `❌ Error: ${data.error}`;
+                } else {
+                    resultDiv.innerText = "❌ Unknown error occurred.";
+                }
+            } catch (error) {
+                resultDiv.classList.remove('loading');
+                resultDiv.innerText = `❌ Error: ${error.message}`;
+            }
+        });
+    </script>
 </body>
+
 </html>
