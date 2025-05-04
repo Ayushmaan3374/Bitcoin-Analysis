@@ -58,3 +58,6 @@ Cluster analysis revealed distinct market behaviors, with Cluster 1 showing high
 Feature importance analysis highlighted the relevance of rolling standard deviation and price-to-volume ratio in distinguishing market behaviors.
 
 The model provides a strong foundation for further analysis and can be visualized in interactive dashboards like Power BI for real-time decision-making.
+
+![qrcode_bitcoin-analysis onrender com](https://github.com/user-attachments/assets/7dff4b26-651c-4f04-816d-9d7fc2448747)
+
